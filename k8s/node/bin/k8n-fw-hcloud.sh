@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 exec 1> >(logger -s -t $(basename $0)) 2>&1
 # · ---
-VERSION=1.01
+VERSION=1.02
 # · ---
 MASTER="${1}";
 TOKEN="${2}";
@@ -43,7 +43,17 @@ if [[ "${UFW}" == "Status: inactive" ]]; then
 
     # [[ -z "$MASTER" ]] || ufw allow from ${MASTER} to ${IP_WAN:-any} comment "Master"
 
-    ufw limit proto tcp from any to ${WAN:-any} port ${SSH_PORT};
+    ufw limit proto tcp from any to ${WAN:-any} port ${SSH_PORT} 'sys.fw · SSH';
+
+    ufw allow out from "${WAN}" to any port 53 proto udp comment 'base.fw · DNS'
+    ufw allow out from "${WAN}" to any port 53 proto tcp comment 'base.fw · DNS'
+    ufw allow out from "${WAN}" to any port 80 proto tcp comment 'base.fw · HTTP'
+    ufw allow out from "${WAN}" to any port 123 proto udp comment 'base.fw · NTP'
+    ufw allow in from any to "${WAN}" port 123 proto udp comment 'base.fw · NTP'
+    ufw allow out from "${WAN}" to any port 443 proto tcp comment 'base.fw · HTTPS'
+    ufw allow out from "${WAN}" to any port 853 proto tcp comment 'base.fw · DNS-TLS'
+    ufw allow out from "${WAN}" to any port 11371 proto tcp comment 'base.fw · PGP-KEYSERVERS'
+    ufw allow out from "${WAN}" to any port 11371 proto udp comment 'base.fw · PGP-KEYSERVERS'
 
     ufw allow in on lo comment 'base.fw · LOOPBACK'
     ufw allow out on lo comment 'base.fw · LOOPBACK'
@@ -63,30 +73,18 @@ if [[ "${UFW}" == "Status: inactive" ]]; then
     ufw allow from "${CLAN}" comment 'base.fw · K8S-CLUSTERS'
     ufw allow out to ff02::/64 comment 'base.fw · K8S-VxLan'
 
-    ufw allow out from "${WAN}" to any port 53 proto udp comment 'base.fw · DNS'
-    ufw allow out from "${WAN}" to any port 53 proto tcp comment 'base.fw · DNS'
-    ufw allow out from "${WAN}" to any port 80 proto tcp comment 'base.fw · HTTP'
-    ufw allow out from "${WAN}" to any port 123 proto udp comment 'base.fw · NTP'
-    ufw allow in from any to "${WAN}" port 123 proto udp comment 'base.fw · NTP'
-    ufw allow out from "${WAN}" to any port 443 proto tcp comment 'base.fw · HTTPS'
-    ufw allow out from "${WAN}" to any port 853 proto tcp comment 'base.fw · DNS-TLS'
-    ufw allow out from "${WAN}" to any port 11371 proto tcp comment 'base.fw · PGP-KEYSERVERS'
-    ufw allow out from "${WAN}" to any port 11371 proto udp comment 'base.fw · PGP-KEYSERVERS'
-
     ufw --force enable
 
     UFW="$(ufw status numbered)"
 fi
 
-if [[ ! -f "${FCUR}" ]]; then
-    echo "${UFW}" | awk -v a="${LBEL}" -v b="${FRUL}" -v c="${FCUR}" \
-        '$0~a{ sub(/\/tcp/, "")sub(/\[/, "")sub(/\]/, ""); { print $1"@"$5 > b; print $5 } }' | \
-        sort -u  > "${FCUR}";
-fi
+echo "${UFW}" | awk -v a="${LBEL}" -v b="${FRUL}" -v c="${FCUR}" \
+  '$0~a{ sub(/\/tcp/, "")sub(/\[/, "")sub(/\]/, ""); { print $1"@"$5 > b; print $5 } }' | \
+  sort -u  > "${FCUR}";
 
 echo "$(curl -H "${APIH}" -H "${APIT} ${TOKEN}" "${APIU}" | jq -r "${APIQ}" | sort -u)" > "${FNEW}";
 
-cmp --silent "${FCUR}" "${FNEW}" && { rm -f ${FCUR}; exit 0; } # No changes
+cmp --silent "${FCUR}" "${FNEW}" && { rm -f ${FRUL} ${FNEW} ${FCUR}; exit 0; } # No changes
 
 [[ ! -f "${FRUL}" ]] && touch ${FRUL}
 
