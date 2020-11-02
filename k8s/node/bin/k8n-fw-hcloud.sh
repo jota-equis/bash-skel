@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
+exec 1> >(logger -s -t $(basename $0)) 2>&1
+# · ---
 VERSION=0.9
-
+# · ---
 MASTER="${1}";
 TOKEN="${2}";
 SSH_PORT="${3:-22}";
@@ -105,4 +107,6 @@ done
 
 rm ${FRUL} && mv ${FNEW} ${FCUR}
 # · ---
+echo -e "| K8n :: Firewall rules updated"
+
 exit 0
