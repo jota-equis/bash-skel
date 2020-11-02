@@ -5,7 +5,7 @@ MASTER="${1}";
 TOKEN="${2}";
 SSH_PORT="${3:-22}";
 
-BDIR=/srv/local/firewall
+BDIR=/srv/local/etc/firewall
 BFIL="node.ip-addr"
 LBEL="node.lan";
 LLAN="10.0.1.0/16"      # Local lan
