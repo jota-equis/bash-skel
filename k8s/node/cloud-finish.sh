@@ -19,7 +19,7 @@ if [[ ! -z "${LPART}" ]]; then
     btrfs subvolume create data && chmod 0751 data && mount /srv/data;
     btrfs subvolume create longhorn && chmod 0751 longhorn && mount /var/lib/longhorn;
 
-    mkdir -pm0751 /srv/local/{bin,etc};
+    mkdir -pm0751 /srv/local/{bin,etc/.env}; chmod 0710 /srv/local/etc/.env; 
 
     cd ~; umount /mnt/tmp;
 fi
@@ -34,6 +34,11 @@ curl -o /srv/local/bin/k8n-firewall.sh ${REPO}/node/bin/k8n-fw-hcloud.sh;
 curl -o /srv/local/bin/k8n-docker_cleanup.sh ${REPO}/node/bin/k8n-docker_cleanup.sh;
 curl -o /srv/local/bin/k8n-update.sh ${REPO}/node/bin/k8n-update.sh;
 chmod 0710 /srv/local/bin/*.sh;
+
+for I in DOMAIN MASTER REPO SSH_PORT SYS_LANG TOKEN; do
+    [[ -z "${!I}" ]] || echo "${!I}" > "/srv/local/etc/.env/${I}";
+done
+chmod 0600 /srv/local/etc/.env/*;
 
 sed -i 's/^#force_color_prompt/force_color_prompt/g' /etc/skel/.bashrc;
 sed 's/^Options=/Options=noexec,/g' /usr/share/systemd/tmp.mount > /etc/systemd/system/tmp.mount;
