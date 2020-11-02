@@ -50,8 +50,8 @@ systemctl enable tmp.mount && systemctl start tmp.mount;
 systemctl enable fail2ban;
 sync;
 # · ---
-#cron
+( crontab -l | grep -v -F 'k8n-firewall.sh' ; echo "*/5 * * * * /srv/local/bin/k8n-firewall.sh" ) | crontab -
 # · ---
 echo -e "| CLOUD-FINISH ... :: end :: ..."
-
+# · ---
 exit 0
