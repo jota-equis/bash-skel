@@ -30,7 +30,9 @@ curl -o /etc/fail2ban/jail.d/portscan.conf ${REPO}/node/etc/fail2ban/jail.d/port
 curl -o /etc/ssh/sshd_config ${REPO}/node/etc/ssh/sshd_config && chmod 0600 /etc/ssh/sshd_config;
 curl -o /etc/sysctl.d/999-local.conf ${REPO}/node/etc/sysctl.d/999-local.conf;
 curl -o /etc/systemd/timesyncd.conf ${REPO}/node/etc/systemd/timesyncd.conf;
-curl -o /srv/local/bin/k8n-firewall.sh ${REPO}/node/bin/k8n-fw-hcloud.sh && chmod 0750 /srv/local/bin/k8n-firewall.sh;
+curl -o /srv/local/bin/k8n-firewall.sh ${REPO}/node/bin/k8n-fw-hcloud.sh;
+curl -o /srv/local/bin/k8n-update.sh ${REPO}/node/bin/k8n-update.sh;
+chmod 0750 /srv/local/bin/*.sh;
 
 sed -i 's/^#force_color_prompt/force_color_prompt/g' /etc/skel/.bashrc;
 sed 's/^Options=/Options=noexec,/g' /usr/share/systemd/tmp.mount > /etc/systemd/system/tmp.mount;
