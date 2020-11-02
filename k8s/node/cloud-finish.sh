@@ -45,12 +45,14 @@ fi
 [[ ! -z "${DOMAIN}" ]] && sed -i "s/^#kernel.domainname/kernel.domainname           = ${DOMAIN}/g" /etc/sysctl.d/999-local.conf;
 
 localectl set-locale LANG=${SYS_LANG}.UTF-8 LANGUAGE=${SYS_LANG} LC_MESSAGES=POSIX LC_COLLATE=C;
+
 systemctl restart systemd-timesyncd.service;
 systemctl enable tmp.mount && systemctl start tmp.mount;
 systemctl enable fail2ban;
-systemctl restart ssh;
+systemctl restart ssh && sync;
+
 /srv/local/bin/k8n-firewall.sh;
-sync;
+
 ( crontab -l | grep -v -F 'k8n-firewall.sh' ; echo "*/5 * * * * /srv/local/bin/k8n-firewall.sh" ) | crontab -
 # · ---
 apt -y full-upgrade && apt -y autoclean && apt -y autoremove;
