@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 exec 1> >(logger -s -t $(basename $0)) 2>&1
 # · ---
-VERSION=1.02
+VERSION=1.05
 # · ---
 MASTER="${1}";
 TOKEN="${2}";
@@ -43,8 +43,6 @@ if [[ "${UFW}" == "Status: inactive" ]]; then
 
     # [[ -z "$MASTER" ]] || ufw allow from ${MASTER} to ${IP_WAN:-any} comment "Master"
 
-    ufw limit proto tcp from any to ${WAN:-any} port ${SSH_PORT} 'sys.fw · SSH';
-
     ufw allow out from "${WAN}" to any port 53 proto udp comment 'base.fw · DNS'
     ufw allow out from "${WAN}" to any port 53 proto tcp comment 'base.fw · DNS'
     ufw allow out from "${WAN}" to any port 80 proto tcp comment 'base.fw · HTTP'
@@ -54,6 +52,8 @@ if [[ "${UFW}" == "Status: inactive" ]]; then
     ufw allow out from "${WAN}" to any port 853 proto tcp comment 'base.fw · DNS-TLS'
     ufw allow out from "${WAN}" to any port 11371 proto tcp comment 'base.fw · PGP-KEYSERVERS'
     ufw allow out from "${WAN}" to any port 11371 proto udp comment 'base.fw · PGP-KEYSERVERS'
+    
+    ufw limit from any to ${WAN:-any} port ${SSH_PORT} proto tcp comment 'sys.fw · SSH';
 
     ufw allow in on lo comment 'base.fw · LOOPBACK'
     ufw allow out on lo comment 'base.fw · LOOPBACK'
