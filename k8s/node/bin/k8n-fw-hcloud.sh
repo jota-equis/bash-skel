@@ -106,7 +106,7 @@ for I in "${NEW[@]}"; do
     fi
 done
 
-rm ${FRUL} && mv ${FNEW} ${FCUR}
+rm ${FRUL}; mv ${FNEW} ${FCUR}
 # · ---
 echo -e "| K8n :: Firewall rules updated"
 
