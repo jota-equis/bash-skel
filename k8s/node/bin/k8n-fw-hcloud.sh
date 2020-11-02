@@ -85,7 +85,7 @@ fi
 
 echo "$(curl -H "${APIH}" -H "${APIT} ${TOKEN}" "${APIU}" | jq -r "${APIQ}" | sort -u)" > "${FNEW}";
 
-cmp --silent "${FCUR}" "${FNEW}" && exit 0; # No changes
+cmp --silent "${FCUR}" "${FNEW}" && { rm -f ${FCUR}; exit 0; } # No changes
 
 [[ ! -f "${FRUL}" ]] && touch ${FRUL}
 
@@ -106,7 +106,7 @@ for I in "${NEW[@]}"; do
     fi
 done
 
-rm ${FRUL}; mv ${FNEW} ${FCUR}
+rm -f ${FRUL}; mv ${FNEW} ${FCUR}
 # · ---
 echo -e "| K8n :: Firewall rules updated"
 
