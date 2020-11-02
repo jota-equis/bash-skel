@@ -31,8 +31,9 @@ curl -o /etc/ssh/sshd_config ${REPO}/node/etc/ssh/sshd_config && chmod 0600 /etc
 curl -o /etc/sysctl.d/999-local.conf ${REPO}/node/etc/sysctl.d/999-local.conf;
 curl -o /etc/systemd/timesyncd.conf ${REPO}/node/etc/systemd/timesyncd.conf;
 curl -o /srv/local/bin/k8n-firewall.sh ${REPO}/node/bin/k8n-fw-hcloud.sh;
+curl -o /srv/local/bin/k8n-docker_cleanup.sh ${REPO}/node/bin/k8n-docker_cleanup.sh;
 curl -o /srv/local/bin/k8n-update.sh ${REPO}/node/bin/k8n-update.sh;
-chmod 0750 /srv/local/bin/*.sh;
+chmod 0710 /srv/local/bin/*.sh;
 
 sed -i 's/^#force_color_prompt/force_color_prompt/g' /etc/skel/.bashrc;
 sed 's/^Options=/Options=noexec,/g' /usr/share/systemd/tmp.mount > /etc/systemd/system/tmp.mount;
