@@ -48,6 +48,8 @@ localectl set-locale LANG=${SYS_LANG}.UTF-8 LANGUAGE=${SYS_LANG} LC_MESSAGES=POS
 systemctl restart systemd-timesyncd.service;
 systemctl enable tmp.mount && systemctl start tmp.mount;
 systemctl enable fail2ban;
+systemctl restart ssh;
+/srv/local/bin/k8n-firewall.sh;
 sync;
 # · ---
 ( crontab -l | grep -v -F 'k8n-firewall.sh' ; echo "*/5 * * * * /srv/local/bin/k8n-firewall.sh" ) | crontab -
