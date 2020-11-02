@@ -60,6 +60,7 @@ if [[ "${UFW}" == "Status: inactive" ]]; then
     ufw allow in from "${PLAN}" to "${PLAN}" comment 'base.fw · K8S-PODS'
     ufw allow out to "${PLAN}" comment 'base.fw · K8S-PODS'
     ufw allow from "${CLAN}" comment 'base.fw · K8S-CLUSTERS'
+    ufw allow out to f02::/64 comment 'base.fw · K8S-VxLan'
 
     ufw allow out from "${WAN}" to any port 53 proto udp comment 'base.fw · DNS'
     ufw allow out from "${WAN}" to any port 53 proto tcp comment 'base.fw · DNS'
