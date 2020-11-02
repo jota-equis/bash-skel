@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 VERSION=0.9
 
-SSH_PORT="${1:-22}";
-MASTER="${2}";
-TOKEN="${3}";
+MASTER="${1}";
+TOKEN="${2}";
+SSH_PORT="${3:-22}";
 
 BDIR=/srv/local/firewall
 BFIL="node.ip-addr"
