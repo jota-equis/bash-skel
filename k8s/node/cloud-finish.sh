@@ -21,7 +21,7 @@ if [[ ! -z "${LPART}" ]]; then
 
     mkdir -pm0751 /srv/local/{bin,etc};
 
-    umount /mnt/tmp;
+    cd ~; umount /mnt/tmp;
 fi
 
 curl -o /etc/apt/apt.conf.d/999-local ${REPO}/node/etc/apt/apt.conf.d/999-local;
