@@ -13,6 +13,7 @@ LBEL="node.lan";
 LLAN="10.0.1.0/16"      # Local lan
 PLAN="10.42.0.0/16"     # Pods lan
 CLAN="10.43.1.0/16"     # Clusters lan
+ELAN="172.0.0.0/8"      # Encapsulated
 # · ---
 [[ -z "${TOKEN}" ]] && { echo -e "\nToken not provided! Can't continue ...\n"; exit 1; }
 [[ $(command -v jq) ]] || apt -y install jq
@@ -71,6 +72,8 @@ if [[ "${UFW}" == "Status: inactive" ]]; then
     ufw allow in from "${PLAN}" to "${PLAN}" comment 'base.fw · K8S-PODS'
     ufw allow out to "${PLAN}" comment 'base.fw · K8S-PODS'
     ufw allow from "${CLAN}" comment 'base.fw · K8S-CLUSTERS'
+    ufw allow in from "${ELAN}" to "${ELAN}" comment 'base.fw · K8S-DOCKER-PROXY'
+    ufw allow out to "${ELAN}" comment 'base.fw · K8S-DOCKER-PROXY'
     ufw allow out to ff02::/64 comment 'base.fw · K8S-VxLan'
 
     ufw --force enable
