@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 exec 1> >(logger -s -t $(basename $0)) 2>&1
 # · ---
-VERSION=1.06
+VERSION=1.07
 # · ---
 MASTER="${1}";
 TOKEN="${2}";
 SSH_PORT="${3:-22}";
+PRFL="${4}";
 
 BDIR=/srv/local/etc/firewall
 BFIL="node.ip-addr"
@@ -14,6 +15,8 @@ LLAN="10.0.1.0/16"      # Local lan
 PLAN="10.42.0.0/16"     # Pods lan
 CLAN="10.43.1.0/16"     # Clusters lan
 ELAN="172.0.0.0/8"      # Encapsulated
+
+declare -a WLIST_NET=( "10.0.0.0/16" "10.42.0.0/16" "10.43.0.0/16" "172.0.0.0/8" );
 # · ---
 [[ -z "${TOKEN}" ]] && { echo -e "\nToken not provided! Can't continue ...\n"; exit 1; }
 [[ $(command -v jq) ]] || apt -y install jq
@@ -44,6 +47,17 @@ if [[ "${UFW}" == "Status: inactive" ]]; then
 
     # [[ -z "$MASTER" ]] || ufw allow from ${MASTER} to ${IP_WAN:-any} comment "Master"
 
+    ufw allow in on lo comment 'base.fw · LOOPBACK'
+    ufw allow out on lo comment 'base.fw · LOOPBACK'
+
+    if [[ ! -z "$NIL" ]]; then
+        ufw allow in on "${NIL}" comment 'base.fw · LAN'
+        ufw allow out on "${NIL}" comment 'base.fw · LAN'
+    fi
+
+    ufw allow in on docker0 comment 'base.fw · DOCKER'
+    ufw allow out on docker0 comment 'base.fw · DOCKER'
+
     ufw allow out from "${WAN}" to any port 53 proto udp comment 'base.fw · DNS'
     ufw allow out from "${WAN}" to any port 53 proto tcp comment 'base.fw · DNS'
     ufw allow out from "${WAN}" to any port 80 proto tcp comment 'base.fw · HTTP'
@@ -56,25 +70,19 @@ if [[ "${UFW}" == "Status: inactive" ]]; then
     
     ufw limit from any to ${WAN:-any} port ${SSH_PORT} proto tcp comment 'sys.fw · SSH';
 
-    ufw allow in on lo comment 'base.fw · LOOPBACK'
-    ufw allow out on lo comment 'base.fw · LOOPBACK'
+    for I in "${WLIST_NET[@]}"; do
+        ufw allow in from "${I}" comment 'base.fw · LOCAL'
+        ufw allow out to "${I}" comment 'base.fw · LOCAL'
+    done
 
-    if [[ ! -z "$NIL" ]]; then
-        ufw allow in on "${NIL}" comment 'base.fw · LAN'
-        ufw allow out on "${NIL}" comment 'base.fw · LAN'
-    fi
-
-    ufw allow in on docker0 comment 'base.fw · DOCKER'
-    ufw allow out on docker0 comment 'base.fw · DOCKER'
-
-    ufw allow from "${LLAN}" comment 'base.fw · PRIVATE'
-    ufw allow out to "${LLAN}" comment 'base.fw · PRIVATE'
-    ufw allow in from "${PLAN}" to "${PLAN}" comment 'base.fw · K8S-PODS'
-    ufw allow out to "${PLAN}" comment 'base.fw · K8S-PODS'
-    ufw allow from "${CLAN}" comment 'base.fw · K8S-CLUSTERS'
-    ufw allow in from "${ELAN}" to "${ELAN}" comment 'base.fw · K8S-DOCKER-PROXY'
-    ufw allow out to "${ELAN}" comment 'base.fw · K8S-DOCKER-PROXY'
-    ufw allow out to ff02::/64 comment 'base.fw · K8S-VxLan'
+#    ufw allow from "${LLAN}" comment 'base.fw · PRIVATE'
+#    ufw allow out to "${LLAN}" comment 'base.fw · PRIVATE'
+#    ufw allow in from "${PLAN}" to "${PLAN}" comment 'base.fw · K8S-PODS'
+#    ufw allow out to "${PLAN}" comment 'base.fw · K8S-PODS'
+#    ufw allow from "${CLAN}" comment 'base.fw · K8S-CLUSTERS'
+#    ufw allow in from "${ELAN}" to "${ELAN}" comment 'base.fw · K8S-DOCKER-PROXY'
+#    ufw allow out to "${ELAN}" comment 'base.fw · K8S-DOCKER-PROXY'
+    ufw allow out to ff02::/8 comment 'base.fw · K8S-VxLan'
 
     ufw --force enable
 
@@ -103,7 +111,8 @@ done
 
 for I in "${NEW[@]}"; do
     if [[ ! -z "${I}" ]]; then
-        ufw allow from "${I}" to ${WAN:-any} comment "${LBEL}";
+#        ufw allow from "${I}" to ${WAN:-any} comment "${LBEL}";
+        ufw allow from "${I}" comment "${LBEL}";
         ufw allow out to "${I}" comment "${LBEL}";
     fi
 done
