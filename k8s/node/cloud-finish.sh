@@ -4,6 +4,7 @@ exec 1> >(logger -s -t $(basename $0)) 2>&1
 SYS_LANG="${1:-es_ES}"
 SSH_PORT=22
 MASTER=
+ROLE=
 TOKEN=
 REPO="https://raw.githubusercontent.com/jota-dev-src/bash-skel/main/k8s";
 LPART=$(findfs LABEL=LOCAL_DATA)
@@ -35,13 +36,10 @@ curl -o /srv/local/bin/k8n-docker_cleanup.sh ${REPO}/node/bin/k8n-docker_cleanup
 curl -o /srv/local/bin/k8n-update.sh ${REPO}/node/bin/k8n-update.sh;
 chmod 0710 /srv/local/bin/*.sh;
 
-for I in DOMAIN MASTER REPO SSH_PORT SYS_LANG TOKEN; do
+for I in DOMAIN MASTER REPO ROLE SSH_PORT SYS_LANG TOKEN; do
     [[ -z "${!I}" ]] || echo "${!I}" > "/srv/local/etc/.env/${I}";
 done
 chmod 0600 /srv/local/etc/.env/*;
-
-sed -i 's/^#force_color_prompt/force_color_prompt/g' /etc/skel/.bashrc;
-sed 's/^Options=/Options=noexec,/g' /usr/share/systemd/tmp.mount > /etc/systemd/system/tmp.mount;
 
 if [[ "x${SSH_PORT}" != "x22" ]]; then
     sed -i "/^Port 22/a Port ${SSH_PORT}" /etc/ssh/sshd_config;
@@ -51,6 +49,9 @@ fi
 
 [[ ! -z "${TOKEN}" ]] && sed -i "/^TOKEN=/c\TOKEN=${TOKEN}" /srv/local/bin/k8n-firewall.sh;
 [[ ! -z "${DOMAIN}" ]] && sed -i "s/^#kernel.domainname/kernel.domainname           = ${DOMAIN}/g" /etc/sysctl.d/999-local.conf;
+
+sed -i 's/^#force_color_prompt/force_color_prompt/g' /etc/skel/.bashrc;
+sed 's/^Options=/Options=noexec,/g' /usr/share/systemd/tmp.mount > /etc/systemd/system/tmp.mount;
 
 localectl set-locale LANG=${SYS_LANG}.UTF-8 LANGUAGE=${SYS_LANG} LC_MESSAGES=POSIX LC_COLLATE=C;
 
