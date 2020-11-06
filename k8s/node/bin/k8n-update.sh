@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 exec 1> >(logger -s -t $(basename $0)) 2>&1
 # · ---
-VERSION=1.05
+VERSION=1.06
 # · ---
 function verGet { [[ $# -gt 0 ]] && ( [[ -z "${2}" ]] && echo "${1}" || echo "$(cat ${1})" ) | grep -Po '^VERSION=\K[\d.]+$'; }
 function verMax { printf '%s\n' "${1:-1}" "${2:-0}" | sort -g -r | head -1; }
