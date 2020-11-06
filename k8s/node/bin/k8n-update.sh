@@ -25,7 +25,11 @@ if [[ $(verMax "${FW_VER}" $(verGet "${FW_GIT}")) != "${FW_VER}" ]]; then
         [[ -z "${SSH_PORT}" ]] || sed -i "/^SSH_PORT=/c\SSH_PORT=${SSH_PORT}" /srv/local/bin/k8n-firewall.sh
     fi
 
-    echo "| K8n:: FireWall Update";
+    echo "| K8n:: FireWall Update. Reloading ...";
+    sleep 2;
+    yes | ufw reset;
+    sleep 1;
+    ${FW_PATH};
 fi
 
 # · ---
