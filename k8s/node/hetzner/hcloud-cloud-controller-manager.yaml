@@ -54,6 +54,7 @@ spec:
         - key: "node.kubernetes.io/not-ready"
           effect: "NoSchedule"
       containers:
+      hostNetwork: true
         - image: hetznercloud/hcloud-cloud-controller-manager:v1.8.1
           name: hcloud-cloud-controller-manager
           command:
@@ -61,6 +62,8 @@ spec:
             - "--cloud-provider=hcloud"
             - "--leader-elect=false"
             - "--allow-untagged-cloud"
+            - "--allocate-node-cidrs=true"
+            - "--cluster-cidr=10.244.0.0/16"
           resources:
             requests:
               cpu: 100m
