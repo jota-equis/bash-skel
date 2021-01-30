@@ -215,11 +215,18 @@ spec:
       labels:
         app: hcloud-csi
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/worker
+                operator: Exists
       tolerations:
-#        - effect: NoExecute
-#          operator: Exists
-#        - effect: NoSchedule
-#          operator: Exists
+        - effect: NoExecute
+          operator: Exists
+        - effect: NoSchedule
+          operator: Exists
         - key: CriticalAddonsOnly
           operator: Exists
       serviceAccount: hcloud-csi
