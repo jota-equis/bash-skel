@@ -61,6 +61,8 @@ spec:
             - "--cloud-provider=hcloud"
             - "--leader-elect=false"
             - "--allow-untagged-cloud"
+            - "--allocate-node-cidrs=true"
+            - "--cluster-cidr=10.42.0.0/16"
           resources:
             requests:
               cpu: 100m
