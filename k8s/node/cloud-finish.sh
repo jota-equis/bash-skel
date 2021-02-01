@@ -62,6 +62,7 @@ systemctl enable fail2ban;
 /srv/local/bin/k8n-firewall.sh;
 
 ( crontab -l | grep -v -F 'k8n-firewall.sh' ; echo "*/5 * * * * /srv/local/bin/k8n-firewall.sh" ) | crontab -
+( crontab -l | grep -v -F 'k8n-update.sh' ; echo "*/57 * * * * /srv/local/bin/k8n-update.sh" ) | crontab -
 # · ---
 apt -y full-upgrade && apt -y autoclean && apt -y autoremove && sync;
 # systemctl restart ssh;
