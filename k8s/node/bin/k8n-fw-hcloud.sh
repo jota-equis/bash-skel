@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 exec 1> >(logger -s -t $(basename $0)) 2>&1
 # · ---
-VERSION=1.08
+VERSION=1.09
 # · ---
 MASTER="${1}";
 TOKEN="${2}";
@@ -100,8 +100,8 @@ done
 
 for I in "${NEW[@]}"; do
     if [[ ! -z "${I}" ]]; then
-        ufw allow from "${I}" comment "${LBEL}";
-        ufw allow out to "${I}" comment "${LBEL}";
+        ufw allow from "${I}/32" to "${WAN}" comment "${LBEL}";
+        ufw allow out from "${WAN}" to "${I}/32" comment "${LBEL}";
     fi
 done
 
