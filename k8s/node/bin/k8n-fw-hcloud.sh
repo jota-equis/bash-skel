@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 exec 1> >(logger -s -t $(basename $0)) 2>&1
 # · ---
-VERSION=1.10
+VERSION=1.11
 # · ---
 MASTER="${1}";
 TOKEN="${2}";
@@ -86,7 +86,7 @@ echo "${UFW}" | awk -v a="${LBEL}" -v b="${FRUL}" -v c="${FCUR}" \
 
 echo "$(curl -H "${APIH}" -H "${APIT} ${TOKEN}" "${APIU}" | jq -r "${APIQ}" | sort -u)" > "${FNEW}";
 
-cmp --silent "${FCUR}" "${FNEW}" && { rm -f ${FRUL} ${FNEW} ${FCUR}; exit 0; } # No changes
+cmp --silent "${FCUR}" "${FNEW}" && { rm -f ${FRUL} ${FNEW} ${FCUR}; echo -e "| K8n :: Firewall has no changes"; exit 0; } # No changes
 
 [[ ! -f "${FRUL}" ]] && touch ${FRUL}
 
@@ -97,6 +97,7 @@ NEW=( "${NEW[@]/$WAN}" )
 
 for I in "${RUL[@]}"; do
     IFS=@ read id addr <<< ${I}
+    [[ "${addr}" = "${WAN}" ]] && continue;
     [[ " ${NEW[@]} " =~ " ${addr} " ]] && NEW=( "${NEW[@]/$addr}" ) || yes | ufw delete ${id} &> /dev/null
 done
 
