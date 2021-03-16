@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 exec 1> >(logger -s -t $(basename $0)) 2>&1
 # · ---
-VERSION=1.29
+VERSION=1.31
 # · ---
 MASTER="${1}";
 TOKEN="${2}";
@@ -14,7 +14,7 @@ LBEL="node.lan";
 
 PATH=/usr/bin:/usr/sbin:/bin:/sbin:$PATH;
 
-declare -a WLIST_NET=( "10.0.0.0/16" "10.42.0.0/16" "10.43.0.0/16" );
+declare -a WLIST_NET=( "10.0.0.0/24" "10.0.1.0/24" "10.42.0.0/16" "10.43.0.0/16" );
 #declare -a WLIST_NET=( "10.0.0.0/24" "10.0.1.0/24" "10.42.0.0/16" "10.43.0.0/16" );
 #declare -a WLIST_NET=( "10.0.0.0/16" "10.42.0.0/16" "10.43.0.0/16" "172.0.0.0/8" );
 # · ---
