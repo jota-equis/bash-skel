@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 exec 1> >(logger -s -t $(basename $0)) 2>&1
 # · ---
-VERSION=1.23
+VERSION=1.27
 # · ---
 MASTER="${1}";
 TOKEN="${2}";
@@ -14,7 +14,8 @@ LBEL="node.lan";
 
 PATH=/usr/bin:/usr/sbin:/bin:/sbin:$PATH;
 
-declare -a WLIST_NET=( "10.0.0.0/24" "10.0.1.0/24" "10.42.0.0/16" "10.43.0.0/16" "172.0.0.0/8" );
+declare -a WLIST_NET=( "10.0.0.0/16" "10.42.0.0/16" "10.43.0.0/16" );
+#declare -a WLIST_NET=( "10.0.0.0/24" "10.0.1.0/24" "10.42.0.0/16" "10.43.0.0/16" );
 #declare -a WLIST_NET=( "10.0.0.0/16" "10.42.0.0/16" "10.43.0.0/16" "172.0.0.0/8" );
 # · ---
 [[ -z "${TOKEN}" ]] && { echo -e "\nToken not provided! Can't continue ...\n"; exit 1; }
@@ -60,16 +61,20 @@ if [[ "${UFW}" == "Status: inactive" ]]; then
     for I in "${WLIST_NET[@]}"; do
 #        ufw allow in from "${I}" comment 'base.fw · LOCAL'
 #        ufw allow out to "${I}" comment 'base.fw · LOCAL'
-        ufw allow from "${I}" comment 'base.fw · LOCAL'
+        ufw allow in on "${NIL}" to "${I}" comment 'base.fw · LOCAL'
     done
 
 #    ufw allow in on lo comment 'base.fw · LOOPBACK'
 #    ufw allow out on lo comment 'base.fw · LOOPBACK'
-    ufw allow in on lo comment 'base.fw · LOOPBACK'
-
-#    ufw allow out to ff02::/8 comment 'base.fw · K8S-VxLan'
+    ufw allow in on lo to 127.0.0.1/8 comment 'base.fw · LOOPBACK'
+    ufw allow in on docker0 to 172.0.0.0/8 comment 'base.fw · DOCKER'
     ufw allow from ff02::/8 comment 'base.fw · K8S-VxLan'
     
+#    ufw allow in on docker0 comment 'base.fw · DOCKER'
+#    ufw allow out on docker0 comment 'base.fw · DOCKER'
+
+#    ufw allow out to ff02::/8 comment 'base.fw · K8S-VxLan'
+
 #    [[ -z "$MASTER" ]] || { ufw allow in from ${MASTER} comment "base.fw · Master" ; ufw allow out to ${MASTER} comment "base.fw · Master" ; }
     [[ -z "$MASTER" ]] || ufw allow from ${MASTER} comment "base.fw · Master";
 
@@ -77,9 +82,6 @@ if [[ "${UFW}" == "Status: inactive" ]]; then
 #        ufw allow in on "${NIL}" comment 'base.fw · LAN'
 #        ufw allow out on "${NIL}" comment 'base.fw · LAN'
 #    fi
-
-#    ufw allow in on docker0 comment 'base.fw · DOCKER'
-#    ufw allow out on docker0 comment 'base.fw · DOCKER'
 
     ufw --force enable
 
