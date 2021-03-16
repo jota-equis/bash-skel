@@ -63,7 +63,7 @@ if [[ "${UFW}" == "Status: inactive" ]]; then
     ufw allow from ff02::/8 comment 'base.fw · K8S-VxLan'
 
     for I in "${WLIST_NET[@]}"; do
-        ufw allow in on "${NIL}" from "${I}" $(echo "${TOLAN}") comment 'base.fw · LOCAL'
+        ufw allow in on "${NIL}" from "${I}" $(echo "${TOLAN}") comment 'base.fw · LOCAL';
 #        ufw allow in from "${I}" comment 'base.fw · LOCAL'
 #        ufw allow out to "${I}" comment 'base.fw · LOCAL'
 #        ufw allow in on "${NIL}" to "${I}" comment 'base.fw · LOCAL'
