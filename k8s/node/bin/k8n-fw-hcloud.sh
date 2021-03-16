@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 exec 1> >(logger -s -t $(basename $0)) 2>&1
 # · ---
-VERSION=1.35
+VERSION=1.37
 # · ---
 MASTER="${1}";
 TOKEN="${2}";
@@ -68,10 +68,10 @@ if [[ "${UFW}" == "Status: inactive" ]]; then
 
     ufw allow in on lo to 127.0.0.1/8 comment 'base.fw · LOOPBACK'
 
-    ufw allow in on "${NIL}" from 10.0.0.0/24 "${TOLAN}" comment 'base.fw · LOCAL'
-    ufw allow in on "${NIL}" from 10.0.1.0/24 "${TOLAN}" comment 'base.fw · LOCAL'
-    ufw allow in on "${NIL}" from 10.42.0.0/16 "${TOLAN}" comment 'base.fw · LOCAL'
-    ufw allow in on "${NIL}" from 10.43.0.0/16 "${TOLAN}" comment 'base.fw · LOCAL'
+    ufw allow in on "${NIL}" from 10.0.0.0/24 ${TOLAN} comment 'base.fw · LOCAL'
+    ufw allow in on "${NIL}" from 10.0.1.0/24 ${TOLAN} comment 'base.fw · LOCAL'
+    ufw allow in on "${NIL}" from 10.42.0.0/16 ${TOLAN} comment 'base.fw · LOCAL'
+    ufw allow in on "${NIL}" from 10.43.0.0/16 ${TOLAN} comment 'base.fw · LOCAL'
 
     ufw allow in on docker0 to 172.0.0.0/8 comment 'base.fw · DOCKER'
     ufw allow from ff02::/8 comment 'base.fw · K8S-VxLan'
