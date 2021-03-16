@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 exec 1> >(logger -s -t $(basename $0)) 2>&1
 # · ---
-VERSION=1.31
+VERSION=1.35
 # · ---
 MASTER="${1}";
 TOKEN="${2}";
@@ -14,7 +14,7 @@ LBEL="node.lan";
 
 PATH=/usr/bin:/usr/sbin:/bin:/sbin:$PATH;
 
-declare -a WLIST_NET=( "10.0.0.0/24" "10.0.1.0/24" "10.42.0.0/16" "10.43.0.0/16" );
+#declare -a WLIST_NET=( "10.0.0.0/24" "10.0.1.0/24" "10.42.0.0/16" "10.43.0.0/16" );
 #declare -a WLIST_NET=( "10.0.0.0/24" "10.0.1.0/24" "10.42.0.0/16" "10.43.0.0/16" );
 
 # · ---
@@ -26,6 +26,7 @@ cd "${BDIR}"
 WAN=$(ip -4 -f inet a s eth0 | grep -Po 'inet \K[\d.]+')
 NIL="$(find /sys/class/net -type l -not -name eth0 -not -lname '*virtual*' -printf '%f')" # Lan iface
 [[ -z "${NIL}" ]] && LAN="" || LAN=$(ip -4 -f inet a s ${NIL} | grep -Po 'inet \K[\d.]+')
+[[ -z "${LAN}" ]] && TOLAN="" || TOLAN="to ${LAN}"
 
 FCUR="${BDIR}/${BFIL}.cur"
 FNEW="${BDIR}/${BFIL}.new"
@@ -59,17 +60,24 @@ if [[ "${UFW}" == "Status: inactive" ]]; then
     
     ufw limit from any to ${WAN:-any} port ${SSH_PORT} proto tcp comment 'sys.fw · SSH';
 
-    for I in "${WLIST_NET[@]}"; do
+#     for I in "${WLIST_NET[@]}"; do
 #        ufw allow in from "${I}" comment 'base.fw · LOCAL'
 #        ufw allow out to "${I}" comment 'base.fw · LOCAL'
-        ufw allow in on "${NIL}" to "${I}" comment 'base.fw · LOCAL'
-    done
+#        ufw allow in on "${NIL}" to "${I}" comment 'base.fw · LOCAL'
+#    done
 
-#    ufw allow in on lo comment 'base.fw · LOOPBACK'
-#    ufw allow out on lo comment 'base.fw · LOOPBACK'
     ufw allow in on lo to 127.0.0.1/8 comment 'base.fw · LOOPBACK'
+
+    ufw allow in on "${NIL}" from 10.0.0.0/24 "${TOLAN}" comment 'base.fw · LOCAL'
+    ufw allow in on "${NIL}" from 10.0.1.0/24 "${TOLAN}" comment 'base.fw · LOCAL'
+    ufw allow in on "${NIL}" from 10.42.0.0/16 "${TOLAN}" comment 'base.fw · LOCAL'
+    ufw allow in on "${NIL}" from 10.43.0.0/16 "${TOLAN}" comment 'base.fw · LOCAL'
+
     ufw allow in on docker0 to 172.0.0.0/8 comment 'base.fw · DOCKER'
     ufw allow from ff02::/8 comment 'base.fw · K8S-VxLan'
+    
+#    ufw allow in on lo comment 'base.fw · LOOPBACK'
+#    ufw allow out on lo comment 'base.fw · LOOPBACK'
     
 #    ufw allow in on docker0 comment 'base.fw · DOCKER'
 #    ufw allow out on docker0 comment 'base.fw · DOCKER'
