@@ -14,8 +14,8 @@ LBEL="node.lan";
 
 PATH=/usr/bin:/usr/sbin:/bin:/sbin:$PATH;
 
-# declare -a WLIST_NET=( "10.0.0.0/24" "10.0.1.0/24" "10.42.0.0/16" "10.43.0.0/16" "172.0.0.0/8" );
-declare -a WLIST_NET=( "10.0.0.0/16" "10.42.0.0/16" "10.43.0.0/16" "172.0.0.0/8" );
+declare -a WLIST_NET=( "10.0.0.0/24" "10.0.1.0/24" "10.42.0.0/16" "10.43.0.0/16" "172.0.0.0/8" );
+#declare -a WLIST_NET=( "10.0.0.0/16" "10.42.0.0/16" "10.43.0.0/16" "172.0.0.0/8" );
 # · ---
 [[ -z "${TOKEN}" ]] && { echo -e "\nToken not provided! Can't continue ...\n"; exit 1; }
 [[ $(command -v jq) ]] || apt -y install jq
