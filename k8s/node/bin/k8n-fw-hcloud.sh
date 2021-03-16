@@ -16,7 +16,7 @@ PATH=/usr/bin:/usr/sbin:/bin:/sbin:$PATH;
 
 declare -a WLIST_NET=( "10.0.0.0/24" "10.0.1.0/24" "10.42.0.0/16" "10.43.0.0/16" );
 #declare -a WLIST_NET=( "10.0.0.0/24" "10.0.1.0/24" "10.42.0.0/16" "10.43.0.0/16" );
-#declare -a WLIST_NET=( "10.0.0.0/16" "10.42.0.0/16" "10.43.0.0/16" "172.0.0.0/8" );
+
 # · ---
 [[ -z "${TOKEN}" ]] && { echo -e "\nToken not provided! Can't continue ...\n"; exit 1; }
 [[ $(command -v jq) ]] || apt -y install jq
@@ -73,7 +73,6 @@ if [[ "${UFW}" == "Status: inactive" ]]; then
     
 #    ufw allow in on docker0 comment 'base.fw · DOCKER'
 #    ufw allow out on docker0 comment 'base.fw · DOCKER'
-
 #    ufw allow out to ff02::/8 comment 'base.fw · K8S-VxLan'
 
 #    [[ -z "$MASTER" ]] || { ufw allow in from ${MASTER} comment "base.fw · Master" ; ufw allow out to ${MASTER} comment "base.fw · Master" ; }
