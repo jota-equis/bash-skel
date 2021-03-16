@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 exec 1> >(logger -s -t $(basename $0)) 2>&1
 # · ---
-VERSION=1.11
+VERSION=1.20
 # · ---
 MASTER="${1}";
 TOKEN="${2}";
@@ -14,7 +14,8 @@ LBEL="node.lan";
 
 PATH=/usr/bin:/usr/sbin:/bin:/sbin:$PATH;
 
-declare -a WLIST_NET=( "10.0.0.0/24" "10.0.1.0/24" "10.42.0.0/16" "10.43.0.0/16" "172.0.0.0/8" );
+# declare -a WLIST_NET=( "10.0.0.0/24" "10.0.1.0/24" "10.42.0.0/16" "10.43.0.0/16" "172.0.0.0/8" );
+declare -a WLIST_NET=( "10.0.0.0/16" "10.42.0.0/16" "10.43.0.0/16" "172.0.0.0/8" );
 # · ---
 [[ -z "${TOKEN}" ]] && { echo -e "\nToken not provided! Can't continue ...\n"; exit 1; }
 [[ $(command -v jq) ]] || apt -y install jq
@@ -39,41 +40,46 @@ UFW="$(ufw status numbered)"
 if [[ "${UFW}" == "Status: inactive" ]]; then
     ufw --force reset;
     ufw default deny incoming;
-    ufw default deny outgoing;
-    ufw default allow routed;
+#    ufw default deny outgoing;
+    ufw default allow outgoing;
+#    ufw default allow routed;
     # forwarding ?
 
-    ufw allow out from "${WAN}" to any port 53 proto udp comment 'base.fw · DNS'
-    ufw allow out from "${WAN}" to any port 53 proto tcp comment 'base.fw · DNS'
-    ufw allow out from "${WAN}" to any port 80 proto tcp comment 'base.fw · HTTP'
-    ufw allow out from "${WAN}" to any port 123 proto udp comment 'base.fw · NTP'
+#    ufw allow out from "${WAN}" to any port 53 proto udp comment 'base.fw · DNS'
+#    ufw allow out from "${WAN}" to any port 53 proto tcp comment 'base.fw · DNS'
+#    ufw allow out from "${WAN}" to any port 80 proto tcp comment 'base.fw · HTTP'
+#    ufw allow out from "${WAN}" to any port 123 proto udp comment 'base.fw · NTP'
     ufw allow in from any to "${WAN}" port 123 proto udp comment 'base.fw · NTP'
-    ufw allow out from "${WAN}" to any port 443 proto tcp comment 'base.fw · HTTPS'
-    ufw allow out from "${WAN}" to any port 853 proto tcp comment 'base.fw · DNS-TLS'
-    ufw allow out from "${WAN}" to any port 11371 proto tcp comment 'base.fw · PGP-KEYSERVERS'
-    ufw allow out from "${WAN}" to any port 11371 proto udp comment 'base.fw · PGP-KEYSERVERS'
+#    ufw allow out from "${WAN}" to any port 443 proto tcp comment 'base.fw · HTTPS'
+#    ufw allow out from "${WAN}" to any port 853 proto tcp comment 'base.fw · DNS-TLS'
+#    ufw allow out from "${WAN}" to any port 11371 proto tcp comment 'base.fw · PGP-KEYSERVERS'
+#    ufw allow out from "${WAN}" to any port 11371 proto udp comment 'base.fw · PGP-KEYSERVERS'
     
     ufw limit from any to ${WAN:-any} port ${SSH_PORT} proto tcp comment 'sys.fw · SSH';
 
     for I in "${WLIST_NET[@]}"; do
-        ufw allow in from "${I}" comment 'base.fw · LOCAL'
-        ufw allow out to "${I}" comment 'base.fw · LOCAL'
+#        ufw allow in from "${I}" comment 'base.fw · LOCAL'
+#        ufw allow out to "${I}" comment 'base.fw · LOCAL'
+        ufw allow from "${I}" comment 'base.fw · LOCAL'
     done
 
-    ufw allow out to ff02::/8 comment 'base.fw · K8S-VxLan'
-    
-    [[ -z "$MASTER" ]] || { ufw allow in from ${MASTER} comment "base.fw · Master" ; ufw allow out to ${MASTER} comment "base.fw · Master" ; }
-
+#    ufw allow in on lo comment 'base.fw · LOOPBACK'
+#    ufw allow out on lo comment 'base.fw · LOOPBACK'
     ufw allow in on lo comment 'base.fw · LOOPBACK'
-    ufw allow out on lo comment 'base.fw · LOOPBACK'
 
-    if [[ ! -z "$NIL" ]]; then
-        ufw allow in on "${NIL}" comment 'base.fw · LAN'
-        ufw allow out on "${NIL}" comment 'base.fw · LAN'
-    fi
+#    ufw allow out to ff02::/8 comment 'base.fw · K8S-VxLan'
+    ufw allow from ff02::/8 comment 'base.fw · K8S-VxLan'
+    
+#    [[ -z "$MASTER" ]] || { ufw allow in from ${MASTER} comment "base.fw · Master" ; ufw allow out to ${MASTER} comment "base.fw · Master" ; }
+    [[ -z "$MASTER" ]] || ufw allow from ${MASTER} comment "base.fw · Master";
 
-    ufw allow in on docker0 comment 'base.fw · DOCKER'
-    ufw allow out on docker0 comment 'base.fw · DOCKER'
+#    if [[ ! -z "$NIL" ]]; then
+#        ufw allow in on "${NIL}" comment 'base.fw · LAN'
+#        ufw allow out on "${NIL}" comment 'base.fw · LAN'
+#    fi
+
+#    ufw allow in on docker0 comment 'base.fw · DOCKER'
+#    ufw allow out on docker0 comment 'base.fw · DOCKER'
 
     ufw --force enable
 
@@ -103,8 +109,9 @@ done
 
 for I in "${NEW[@]}"; do
     if [[ ! -z "${I}" ]]; then
-        ufw allow from "${I}/32" to "${WAN}" comment "${LBEL}";
-        ufw allow out from "${WAN}" to "${I}/32" comment "${LBEL}";
+        ufw allow from "${I}/32" comment "${LBEL}";
+#        ufw allow from "${I}/32" to "${WAN}" comment "${LBEL}";
+#        ufw allow out from "${WAN}" to "${I}/32" comment "${LBEL}";
     fi
 done
 
