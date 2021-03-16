@@ -46,6 +46,7 @@ if [[ "${UFW}" == "Status: inactive" ]]; then
 #    ufw default allow routed;
     # forwarding ?
 
+
 #    ufw allow out from "${WAN}" to any port 53 proto udp comment 'base.fw · DNS'
 #    ufw allow out from "${WAN}" to any port 53 proto tcp comment 'base.fw · DNS'
 #    ufw allow out from "${WAN}" to any port 80 proto tcp comment 'base.fw · HTTP'
