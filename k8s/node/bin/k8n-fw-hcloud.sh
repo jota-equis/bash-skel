@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 exec 1> >(logger -s -t $(basename $0)) 2>&1
 # · ---
-VERSION=1.37
+VERSION=1.38
 # · ---
 MASTER="${1}";
 TOKEN="${2}";
@@ -14,7 +14,7 @@ LBEL="node.lan";
 
 PATH=/usr/bin:/usr/sbin:/bin:/sbin:$PATH;
 
-#declare -a WLIST_NET=( "10.0.0.0/24" "10.0.1.0/24" "10.42.0.0/16" "10.43.0.0/16" );
+declare -a WLIST_NET=( "10.0.0.0/24" "10.0.1.0/24" "10.42.0.0/16" "10.43.0.0/16" );
 #declare -a WLIST_NET=( "10.0.0.0/24" "10.0.1.0/24" "10.42.0.0/16" "10.43.0.0/16" );
 
 # · ---
@@ -52,30 +52,23 @@ if [[ "${UFW}" == "Status: inactive" ]]; then
 #    ufw allow out from "${WAN}" to any port 53 proto tcp comment 'base.fw · DNS'
 #    ufw allow out from "${WAN}" to any port 80 proto tcp comment 'base.fw · HTTP'
 #    ufw allow out from "${WAN}" to any port 123 proto udp comment 'base.fw · NTP'
-    ufw allow in from any to "${WAN}" port 123 proto udp comment 'base.fw · NTP'
 #    ufw allow out from "${WAN}" to any port 443 proto tcp comment 'base.fw · HTTPS'
 #    ufw allow out from "${WAN}" to any port 853 proto tcp comment 'base.fw · DNS-TLS'
 #    ufw allow out from "${WAN}" to any port 11371 proto tcp comment 'base.fw · PGP-KEYSERVERS'
 #    ufw allow out from "${WAN}" to any port 11371 proto udp comment 'base.fw · PGP-KEYSERVERS'
-    
-    ufw limit from any to ${WAN:-any} port ${SSH_PORT} proto tcp comment 'sys.fw · SSH';
 
-#     for I in "${WLIST_NET[@]}"; do
+    ufw allow in on lo to 127.0.0.1/8 comment 'base.fw · LOOPBACK'
+    ufw allow in on docker0 to 172.0.0.0/8 comment 'base.fw · DOCKER'
+
+    ufw allow from ff02::/8 comment 'base.fw · K8S-VxLan'
+
+    for I in "${WLIST_NET[@]}"; do
+        ufw allow in on "${NIL}" from "${I}" $(echo "${TOLAN}") comment 'base.fw · LOCAL'
 #        ufw allow in from "${I}" comment 'base.fw · LOCAL'
 #        ufw allow out to "${I}" comment 'base.fw · LOCAL'
 #        ufw allow in on "${NIL}" to "${I}" comment 'base.fw · LOCAL'
-#    done
+    done
 
-    ufw allow in on lo to 127.0.0.1/8 comment 'base.fw · LOOPBACK'
-
-    ufw allow in on "${NIL}" from 10.0.0.0/24 ${TOLAN} comment 'base.fw · LOCAL'
-    ufw allow in on "${NIL}" from 10.0.1.0/24 ${TOLAN} comment 'base.fw · LOCAL'
-    ufw allow in on "${NIL}" from 10.42.0.0/16 ${TOLAN} comment 'base.fw · LOCAL'
-    ufw allow in on "${NIL}" from 10.43.0.0/16 ${TOLAN} comment 'base.fw · LOCAL'
-
-    ufw allow in on docker0 to 172.0.0.0/8 comment 'base.fw · DOCKER'
-    ufw allow from ff02::/8 comment 'base.fw · K8S-VxLan'
-    
 #    ufw allow in on lo comment 'base.fw · LOOPBACK'
 #    ufw allow out on lo comment 'base.fw · LOOPBACK'
     
@@ -90,6 +83,9 @@ if [[ "${UFW}" == "Status: inactive" ]]; then
 #        ufw allow in on "${NIL}" comment 'base.fw · LAN'
 #        ufw allow out on "${NIL}" comment 'base.fw · LAN'
 #    fi
+
+    ufw allow in from any to "${WAN}" port 123 proto udp comment 'base.fw · NTP'
+    ufw limit from any to ${WAN:-any} port ${SSH_PORT} proto tcp comment 'sys.fw · SSH';
 
     ufw --force enable
 
