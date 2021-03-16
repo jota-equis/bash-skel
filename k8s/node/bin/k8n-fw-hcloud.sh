@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 exec 1> >(logger -s -t $(basename $0)) 2>&1
 # · ---
-VERSION=1.21
+VERSION=1.23
 # · ---
 MASTER="${1}";
 TOKEN="${2}";
