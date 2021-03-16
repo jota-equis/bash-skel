@@ -1,127 +1,105 @@
 #!/usr/bin/env bash
 exec 1> >(logger -s -t $(basename $0)) 2>&1
 # · ---
-VERSION=1.38
+PATH=/usr/bin:/usr/sbin:/bin:/sbin:$PATH;
+# · ---
+VERSION=1.5
 # · ---
 MASTER="${1}";
 TOKEN="${2}";
 SSH_PORT="${3:-22}";
-PRFL="${4}";
-
-BDIR=/srv/local/etc/firewall
+ROLE="${4}";
+# · ---
 BFIL="node.ip-addr"
 LBEL="node.lan";
 
-PATH=/usr/bin:/usr/sbin:/bin:/sbin:$PATH;
-
-declare -a WLIST_NET=( "10.0.0.0/24" "10.0.1.0/24" "10.42.0.0/16" "10.43.0.0/16" );
-#declare -a WLIST_NET=( "10.0.0.0/24" "10.0.1.0/24" "10.42.0.0/16" "10.43.0.0/16" );
-
-# · ---
-[[ -z "${TOKEN}" ]] && { echo -e "\nToken not provided! Can't continue ...\n"; exit 1; }
-[[ $(command -v jq) ]] || apt -y install jq
-[[ -d "${BDIR}" ]] || mkdir -pm0751 "${BDIR}"
-cd "${BDIR}"
-
-WAN=$(ip -4 -f inet a s eth0 | grep -Po 'inet \K[\d.]+')
-NIL="$(find /sys/class/net -type l -not -name eth0 -not -lname '*virtual*' -printf '%f')" # Lan iface
-[[ -z "${NIL}" ]] && LAN="" || LAN=$(ip -4 -f inet a s ${NIL} | grep -Po 'inet \K[\d.]+')
-[[ -z "${LAN}" ]] && TOLAN="" || TOLAN="to ${LAN}"
-
+EDIR=/srv/local/etc/.env
+BDIR=/srv/local/etc/firewall
 FCUR="${BDIR}/${BFIL}.cur"
 FNEW="${BDIR}/${BFIL}.new"
-FRUL="${BDIR}/${BFIL}.rul"
-
+# · ---
+[[ -d "${BDIR}" ]] || mkdir -pm0751 "${BDIR}"; cd "${BDIR}";
+[[ -z "${TOKEN}" ]] && { echo -n "\nToken not provided! Can't continue ...\n"; exit 1; }
+[[ -z "${ROLE}" && -f "${EDIR}/ROLE" ]] && ROLE="$(cat "${EDIR}/ROLE")";
+[[ -z "${MASTER}" && -f "${EDIR}/MASTER" ]] && MASTER="$(cat "${EDIR}/MASTER")";
+# · ---
+[[ $(command -v jq) ]] || apt -y install jq
+# · ---
 APIU="https://api.hetzner.cloud/v1/servers"
 APIH="Accept: application/json"
 APIT="Authorization: Bearer"
 APIQ=".servers[].public_net.ipv4.ip"
 
-UFW="$(ufw status numbered)"
+APIR="$(curl -H "${APIH}" -H "${APIT} ${TOKEN}" "${APIU}")";
 # · ---
-if [[ "${UFW}" == "Status: inactive" ]]; then
-    ufw --force reset;
-    ufw default deny incoming;
-#    ufw default deny outgoing;
-    ufw default allow outgoing;
-#    ufw default allow routed;
-    # forwarding ?
+RSET=1
+LAN=""
+WAN=$(ip -4 -f inet a s eth0 | grep -Po 'inet \K[\d.]+')
+NIL="$(find /sys/class/net -type l -not -name eth0 -not -lname '*virtual*' -printf '%f')" # Lan iface
 
+echo -n "${APIR}" | jq -r "${APIQ}" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | sort -bu | sed -e "/${WAN}/d" > "${FNEW}";
 
-#    ufw allow out from "${WAN}" to any port 53 proto udp comment 'base.fw · DNS'
-#    ufw allow out from "${WAN}" to any port 53 proto tcp comment 'base.fw · DNS'
-#    ufw allow out from "${WAN}" to any port 80 proto tcp comment 'base.fw · HTTP'
-#    ufw allow out from "${WAN}" to any port 123 proto udp comment 'base.fw · NTP'
-#    ufw allow out from "${WAN}" to any port 443 proto tcp comment 'base.fw · HTTPS'
-#    ufw allow out from "${WAN}" to any port 853 proto tcp comment 'base.fw · DNS-TLS'
-#    ufw allow out from "${WAN}" to any port 11371 proto tcp comment 'base.fw · PGP-KEYSERVERS'
-#    ufw allow out from "${WAN}" to any port 11371 proto udp comment 'base.fw · PGP-KEYSERVERS'
-
-    ufw allow in on lo to 127.0.0.1/8 comment 'base.fw · LOOPBACK'
-    ufw allow in on docker0 to 172.0.0.0/8 comment 'base.fw · DOCKER'
-
-    ufw allow from ff02::/8 comment 'base.fw · K8S-VxLan'
-
-    for I in "${WLIST_NET[@]}"; do
-        ufw allow in on "${NIL}" from "${I}" $(echo "${TOLAN}") comment 'base.fw · LOCAL';
-#        ufw allow in from "${I}" comment 'base.fw · LOCAL'
-#        ufw allow out to "${I}" comment 'base.fw · LOCAL'
-#        ufw allow in on "${NIL}" to "${I}" comment 'base.fw · LOCAL'
-    done
-
-#    ufw allow in on lo comment 'base.fw · LOOPBACK'
-#    ufw allow out on lo comment 'base.fw · LOOPBACK'
-    
-#    ufw allow in on docker0 comment 'base.fw · DOCKER'
-#    ufw allow out on docker0 comment 'base.fw · DOCKER'
-#    ufw allow out to ff02::/8 comment 'base.fw · K8S-VxLan'
-
-#    [[ -z "$MASTER" ]] || { ufw allow in from ${MASTER} comment "base.fw · Master" ; ufw allow out to ${MASTER} comment "base.fw · Master" ; }
-    [[ -z "$MASTER" ]] || ufw allow from ${MASTER} comment "base.fw · Master";
-
-#    if [[ ! -z "$NIL" ]]; then
-#        ufw allow in on "${NIL}" comment 'base.fw · LAN'
-#        ufw allow out on "${NIL}" comment 'base.fw · LAN'
-#    fi
-
-    ufw allow in from any to "${WAN}" port 123 proto udp comment 'base.fw · NTP'
-    ufw limit from any to ${WAN:-any} port ${SSH_PORT} proto tcp comment 'sys.fw · SSH';
-
-    ufw --force enable
-
-    UFW="$(ufw status numbered)"
+if [[ -s "${FNEW}" ]]; then
+    [[ -f "${FCUR}" ]] && cmp --silent "${FCUR}" "${FNEW}" && { rm -f ${FNEW}; echo -e "| K8n :: Firewall has no changes"; exit 0; }
+    RSET=0
 fi
 
-echo "${UFW}" | awk -v a="${LBEL}" -v b="${FRUL}" -v c="${FCUR}" \
-  '$0~a{ sub(/\/tcp/, "")sub(/\[/, "")sub(/\]/, ""); { print $1"@"$5 > b; print $5 } }' | \
-  sort -u  > "${FCUR}";
-
-echo "$(curl -H "${APIH}" -H "${APIT} ${TOKEN}" "${APIU}" | jq -r "${APIQ}" | sort -u)" > "${FNEW}";
-
-cmp --silent "${FCUR}" "${FNEW}" && { rm -f ${FRUL} ${FNEW} ${FCUR}; echo -e "| K8n :: Firewall has no changes"; exit 0; } # No changes
-
-[[ ! -f "${FRUL}" ]] && touch ${FRUL}
+UFW="$(ufw status numbered)"
 
 declare -a NEW=( $(cat ${FNEW}) )
-declare -a RUL=( $(tac ${FRUL}) )
+declare -a RUL=( $(echo -n "${UFW}" | awk -v a="# node.lan" '$0~a{ sub(/\[/, "")sub(/\]/, ""); { print $1 } }' | sort -brun) )
+declare -a WLIST_NET=( "10.0.0.0/16" "10.42.0.0/16" "10.43.0.0/16" );
 
-NEW=( "${NEW[@]/$WAN}" )
+# · ---
+if [[ "${UFW}" == "Status: inactive" || ${RSET} == 1 ]]; then
+    ufw --force reset;
 
-for I in "${RUL[@]}"; do
-    IFS=@ read id addr <<< ${I}
-    [[ "${addr}" = "${WAN}" ]] && continue;
-    [[ " ${NEW[@]} " =~ " ${addr} " ]] && NEW=( "${NEW[@]/$addr}" ) || yes | ufw delete ${id} &> /dev/null
-done
+    ufw default deny incoming;
+    ufw default allow outgoing;
 
-for I in "${NEW[@]}"; do
-    if [[ ! -z "${I}" ]]; then
-        ufw allow from "${I}/32" comment "${LBEL}";
-#        ufw allow from "${I}/32" to "${WAN}" comment "${LBEL}";
-#        ufw allow out from "${WAN}" to "${I}/32" comment "${LBEL}";
+    ufw allow in on lo comment 'base.fw · LOOPBACK.nic';
+
+    if [[ ! -z "$NIL" ]]; then
+        LAN=$(ip -4 -f inet a s ${NIL} | grep -Po 'inet \K[\d.]+')
+#        ufw allow in on "${NIL}" comment 'base.fw · LOCAL.nic';
     fi
-done
 
-rm -f ${FRUL} ${FNEW} ${FCUR};
+    ufw allow in on docker0 comment 'base.fw · DOCKER.nic';
+
+    ufw allow from 127.0.0.0/8 comment 'base.fw · LOOPBACK.lan';
+    ufw allow from 172.0.0.0/8 comment 'base.fw · DOCKER.lan';
+    ufw allow from ff02::/8 comment 'base.fw · K8S-Vx.lan';
+
+    for i in "${WLIST_NET[@]}"; do
+        #ufw allow in from "${i}" comment 'base.fw · LOCAL.lan';
+        ufw allow from "${i}" to "${LAN}" comment 'base.fw · LOCAL.lan';
+    done
+    
+    # ufw allow in to "${LAN}" comment 'base.fw · LOCAL.lan';
+
+    [[ -z "${MASTER}" ]] || ufw allow from "${MASTER}" comment "base.fw · Master.node";
+
+    ufw allow in from any to "${WAN}" port 123 proto udp comment 'base.fw · NTP'
+    
+    ufw limit from any to ${WAN:-any} port ${SSH_PORT} proto tcp comment 'sys.fw · SSH';
+
+    if [[ "${ROLE}" == "worker" ]]; then
+        ufw allow 80/tcp comment 'srv.fw · HTTP';
+        ufw allow 443/tcp comment 'srv.fw · HTTPS';
+        ufw allow 30000:32767/tcp comment 'srv.fw · PODS';
+    fi
+
+    # if [[ "${EXTRAPORTS}" ]]
+
+    ufw --force enable;
+fi
+
+for i in "${RUL[@]}"; do yes | ufw delete ${i} &> /dev/null; done;
+for i in "${NEW[@]}"; do [[ ! -z "${i}" ]] && ufw allow from "${i}/32" comment "${LBEL}"; done;
+
+mv ${FNEW} ${FCUR} && rm -f ${FRUL};
+
+ufw reload;
 # · ---
 echo -e "| K8n :: Firewall rules updated"
 # · ---
