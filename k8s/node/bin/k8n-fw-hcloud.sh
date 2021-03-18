@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 exec 1> >(logger -s -t $(basename $0)) 2>&1
 # · ---
-VERSION=1.54
+VERSION=1.57
 # · ---
 PATH=/usr/bin:/usr/sbin:/bin:/sbin:$PATH;
 # · ---
@@ -37,11 +37,18 @@ APIQ=".servers[].public_net.ipv4.ip"
 
 APIR="$(curl -H "${APIH}" -H "${APIT} ${TOKEN}" "${APIU}")";
 # · ---
+UFW="$(ufw status numbered)"
 echo -n "${APIR}" | jq -r "${APIQ}" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | sort -bu | sed -e "/${WAN}/d" > "${FNEW}";
 
-[[ -s "${FNEW}" ]] && { RSET=0; [[ -f "${FCUR}" ]] && cmp --silent "${FCUR}" "${FNEW}" && { rm -f ${FNEW}; echo -e "| K8n :: Firewall has no changes"; exit 0; } }
+if [[ -s "${FNEW}" ]]; then
+    RSET=0;
 
-UFW="$(ufw status numbered)"
+    if [[ -f "${FCUR}" ]]; then
+        cmp --silent "${FCUR}" "${FNEW}" && {
+            [[ "${UFW}" == "Status: inactive" ]] && RSET=1 || rm -f ${FNEW}; echo -e "| K8n :: Firewall has no changes"; exit 0;
+        }
+    fi
+fi
 
 declare -a NEW=( $(cat ${FNEW}) )
 declare -a RUL=( $(echo -n "${UFW}" | awk -v a="# node.lan" '$0~a{ sub(/\[/, "")sub(/\]/, ""); { print $1 } }' | sort -brun) )
