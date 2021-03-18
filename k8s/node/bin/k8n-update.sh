@@ -33,6 +33,17 @@ if [[ $(verMax "${LOCAL_VER}" $(verGet "${GIT_PATH}")) != "${LOCAL_VER}" ]]; the
     ${LOCAL_PATH};
 fi
 # · ---
+# CLOUD PROVIDER
+LOCAL_PATH=/srv/local/bin/k8n-cloudprovider.sh
+GIT_PATH="$(curl -s https://raw.githubusercontent.com/jota-dev-src/bash-skel/main/k8s/node/bin/k8n-cloudprovider.sh)"
+LOCAL_VER="$(verGet ${LOCAL_PATH} true)"
+
+if [[ $(verMax "${LOCAL_VER}" $(verGet "${GIT_PATH}")) != "${LOCAL_VER}" ]]; then
+    echo "${GIT_PATH}" >  "${LOCAL_PATH}";
+    echo "| K8n:: Cloud Provider Updated.";
+    sleep 1;
+fi
+# · ---
 # Docker clean
 LOCAL_PATH=/srv/local/bin/k8n-docker_cleanup.sh
 GIT_PATH="$(curl -s https://raw.githubusercontent.com/jota-dev-src/bash-skel/main/k8s/node/bin/k8n-docker_cleanup.sh)"
@@ -43,5 +54,5 @@ if [[ $(verMax "${LOCAL_VER}" $(verGet "${GIT_PATH}")) != "${LOCAL_VER}" ]]; the
     echo "| K8n:: Docker Cleaner Updated.";
     sleep 1;
 fi
-
+# · ---
 exit 0
