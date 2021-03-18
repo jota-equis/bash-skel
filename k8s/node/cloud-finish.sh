@@ -34,6 +34,7 @@ curl -o /etc/systemd/timesyncd.conf ${REPO}/node/etc/systemd/timesyncd.conf;
 curl -o /srv/local/bin/k8n-firewall.sh ${REPO}/node/bin/k8n-fw-hcloud.sh;
 curl -o /srv/local/bin/k8n-docker_cleanup.sh ${REPO}/node/bin/k8n-docker_cleanup.sh;
 curl -o /srv/local/bin/k8n-update.sh ${REPO}/node/bin/k8n-update.sh;
+curl -o /srv/local/bin/k8n-cloudprovider.sh ${REPO}/node/bin/k8n-cloudprovider.sh;
 chmod 0710 /srv/local/bin/*.sh;
 
 for I in DOMAIN MASTER REPO ROLE SSH_PORT SYS_LANG TOKEN; do
