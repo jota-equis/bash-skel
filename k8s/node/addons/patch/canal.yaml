@@ -8,5 +8,5 @@ spec:
       containers:
       - name: kube-flannel
         env:
-        - name: FLANNELD_IFACE_REGEX
+        - name: FLANNELD_IFACE_REGEX_TIRORI
           value: ^10\.0\.
