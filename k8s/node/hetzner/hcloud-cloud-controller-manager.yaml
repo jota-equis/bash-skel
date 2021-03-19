@@ -45,10 +45,17 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: workload
+              - key: node/app.hcloud
+                operator: Exists
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            preference:
+              matchExpressions:
+              - key: node/workload
                 operator: In
                 values:
                 - system
+                - worker
       tolerations:
         # this taint is set by all kubelets running `--cloud-provider=external`
         # so we should tolerate it to schedule the cloud controller manager
@@ -63,7 +70,7 @@ spec:
         - key: "node.kubernetes.io/not-ready"
           effect: "NoSchedule"
         #  Custom node
-        - key: "workload"
+        - key: "node/workload"
           value: "system"
           effect: "NoSchedule"
           operator: "Equal"
