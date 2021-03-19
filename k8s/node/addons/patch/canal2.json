@@ -1,0 +1,1 @@
+[{"op":"add","path":"/spec/template/spec/tolerations/-","value":{"key":"node.cloudprovider.kubernetes.io/uninitialized","value":"true","effect":"NoSchedule"}},{"op":"add","path":"/spec/template/spec/containers/1/env/-","value":{"name":"FLANNELD_IFACE_REGEX","value":"^10\\.0\\."}}]
