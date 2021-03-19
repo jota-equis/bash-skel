@@ -4,6 +4,9 @@ metadata:
   name: canal
   namespace: kube-system
 spec:
+  selector:
+    matchLabels:
+      k8s-app: canal
   template:
     spec:
       containers:
