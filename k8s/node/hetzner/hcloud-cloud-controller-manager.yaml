@@ -40,6 +40,15 @@ spec:
     spec:
       serviceAccountName: cloud-controller-manager
       dnsPolicy: Default
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: workload
+                operator: In
+                values:
+                - system
       tolerations:
         # this taint is set by all kubelets running `--cloud-provider=external`
         # so we should tolerate it to schedule the cloud controller manager
@@ -53,6 +62,12 @@ spec:
           effect: NoSchedule
         - key: "node.kubernetes.io/not-ready"
           effect: "NoSchedule"
+        #  Custom node
+        - key: "workload"
+          value: "system"
+          effect: "NoSchedule"
+          operator: "Equal"
+      hostNetwork: true
       containers:
         - image: hetznercloud/hcloud-cloud-controller-manager:v1.8.1
           name: hcloud-cloud-controller-manager
