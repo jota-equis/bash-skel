@@ -63,7 +63,7 @@ spec:
         - key: "node.kubernetes.io/not-ready"
           effect: "NoSchedule"
         #  Custom node
-        - key: "workload"
+        - key: "nodetype"
           value: "system"
           effect: "NoSchedule"
           operator: "Equal"
