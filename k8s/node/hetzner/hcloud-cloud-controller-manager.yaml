@@ -64,9 +64,7 @@ spec:
           effect: "NoSchedule"
         #  Custom node
         - key: "nodetype"
-          value: "system"
-          effect: "NoSchedule"
-          operator: "Equal"
+          effect: NoSchedule
       hostNetwork: true
       containers:
         - image: hetznercloud/hcloud-cloud-controller-manager:latest
