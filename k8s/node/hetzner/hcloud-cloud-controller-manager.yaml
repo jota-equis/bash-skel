@@ -1,5 +1,5 @@
-# NOTE: this release was tested against kubernetes v1.18.x
 # TRACK: https://github.com/hetznercloud/hcloud-cloud-controller-manager
+# NOTE: this release was tested against kubernetes v1.16.x
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -36,26 +36,10 @@ spec:
       labels:
         app: hcloud-cloud-controller-manager
       annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ''
+        scheduler.alpha.kubernetes.io/critical-pod: ""
     spec:
       serviceAccountName: cloud-controller-manager
       dnsPolicy: Default
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: node/app.hcloud
-                operator: Exists
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 1
-            preference:
-              matchExpressions:
-              - key: node/workload
-                operator: In
-                values:
-                - system
-                - worker
       tolerations:
         # this taint is set by all kubelets running `--cloud-provider=external`
         # so we should tolerate it to schedule the cloud controller manager
@@ -69,14 +53,9 @@ spec:
           effect: NoSchedule
         - key: "node.kubernetes.io/not-ready"
           effect: "NoSchedule"
-        #  Custom node
-        - key: "node/workload"
-          value: "system"
-          effect: "NoSchedule"
-          operator: "Equal"
       hostNetwork: true
       containers:
-        - image: hetznercloud/hcloud-cloud-controller-manager:v1.8.1
+        - image: hetznercloud/hcloud-cloud-controller-manager:latest
           name: hcloud-cloud-controller-manager
           command:
             - "/bin/hcloud-cloud-controller-manager"
@@ -84,7 +63,7 @@ spec:
             - "--leader-elect=false"
             - "--allow-untagged-cloud"
             - "--allocate-node-cidrs=true"
-            - "--cluster-cidr=10.42.0.0/16"
+            - "--cluster-cidr=10.244.0.0/16"
           resources:
             requests:
               cpu: 100m
