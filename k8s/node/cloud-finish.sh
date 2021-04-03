@@ -21,10 +21,10 @@ if [[ ! -z "${LPART}" ]]; then
     btrfs subvolume create rancher && chmod 0751 rancher && mount /var/lib/rancher;
     btrfs subvolume create longhorn && chmod 0751 longhorn && mount /var/lib/longhorn;
 
-    mkdir -pm0751 /srv/local/{bin,etc/.env}; chmod 0710 /srv/local/etc/.env; 
-
     cd ~; umount /mnt/tmp;
 fi
+
+mkdir -pm0751 /srv/local/{bin,etc/.env}; chmod 0710 /srv/local/etc/.env; 
 
 curl -o /etc/apt/apt.conf.d/999-local ${REPO}/node/etc/apt/apt.conf.d/999-local;
 curl -o /etc/fail2ban/jail.d/sshd.conf ${REPO}/node/etc/fail2ban/jail.d/sshd.conf;
