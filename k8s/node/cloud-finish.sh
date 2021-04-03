@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 exec 1> >(logger -s -t $(basename $0)) 2>&1
 # · ---
+export DEBIAN_FRONTEND=noninteractive
+# · ---
 SYS_LANG="${1:-es_ES}"
 SSH_PORT=22
 MASTER=
@@ -65,7 +67,7 @@ systemctl enable fail2ban;
 ( crontab -l | grep -v -F 'k8n-update.sh' ; echo "*/30 * * * * /srv/local/bin/k8n-update.sh" ) | crontab -
 ( crontab -l | grep -v -F 'k8n-docker_cleanup.sh' ; echo "0 3 * * 0 /srv/local/bin/k8n-docker_cleanup.sh" ) | crontab -
 # · ---
-apt -y full-upgrade && apt -y autoclean && apt -y autoremove && sync;
+DEBIAN_FRONTEND=noninteractive apt -y full-upgrade && apt -y autoclean && apt -y autoremove && sync;
 # systemctl restart ssh;
 # · ---
 echo -e "| CLOUD-FINISH ... :: end :: ..."
