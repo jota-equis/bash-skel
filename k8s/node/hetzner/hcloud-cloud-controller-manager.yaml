@@ -40,16 +40,6 @@ spec:
     spec:
       serviceAccountName: cloud-controller-manager
       dnsPolicy: Default
-      affinity:
-        nodeAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 50
-          preference:
-            matchExpressions:
-            - key: app.hcloud
-              operator: In
-              values:
-              - "true"
       tolerations:
         # this taint is set by all kubelets running `--cloud-provider=external`
         # so we should tolerate it to schedule the cloud controller manager
