@@ -12,13 +12,13 @@ LPART=$(findfs LABEL=LOCAL_DATA)
 # · ---
 echo -e "| CLOUD-FINISH ... :: start :: ..."
 # · ---
-mkdir -pm0751 /srv/{backup,data,local} /var/lib/{docker,longhorn} /mnt/tmp;
+mkdir -pm0751 /srv/{backup,data,local} /var/lib/{docker,longhorn,rancher} /mnt/tmp;
 
 if [[ ! -z "${LPART}" ]]; then
     mount ${LPART} /mnt/tmp; cd /mnt/tmp;
 
     btrfs subvolume create docker && chmod 0711 docker && mount /var/lib/docker;
-    btrfs subvolume create data && chmod 0751 data && mount /srv/data;
+    btrfs subvolume create rancher && chmod 0751 rancher && mount /var/lib/rancher;
     btrfs subvolume create longhorn && chmod 0751 longhorn && mount /var/lib/longhorn;
 
     mkdir -pm0751 /srv/local/{bin,etc/.env}; chmod 0710 /srv/local/etc/.env; 
