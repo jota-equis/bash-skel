@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 exec 1> >(logger -s -t $(basename $0)) 2>&1
 # · ---
-VERSION=1.57
+VERSION=1.59
 # · ---
 PATH=/usr/bin:/usr/sbin:/bin:/sbin:$PATH;
 # · ---
@@ -61,12 +61,13 @@ if [[ "${UFW}" == "Status: inactive" || ${RSET} == 1 ]]; then
     ufw default allow outgoing;
 
     ufw allow in on lo from 127.0.0.0/8 to 127.0.0.0/8 comment 'base.fw · LOOPBACK.lan';
+    ufw allow in on "${NIL:-any}" from 10.0.0.0/8 comment 'base.fw · LOCAL.lan'
     ufw allow from 10.42.0.0/16 comment 'base.fw · FLANNEL.lan';
     ufw allow from 10.43.0.0/16 comment 'base.fw · CALICO.lan';
     ufw allow from 10.244.0.0/16 comment 'base.fw · HCLOUD.lan';
     ufw allow from 172.0.0.0/8 comment 'base.fw · DOCKER.lan';
     ufw allow from ff02::/8 comment 'base.fw · K8S-Vx.lan';
-    for i in "${WLIST_NET[@]}"; do ufw allow in on "${NIL:-any}" from "${i}" to "${LAN:-any}" comment 'base.fw · LOCAL.lan'; done
+#    for i in "${WLIST_NET[@]}"; do ufw allow in on "${NIL:-any}" from "${i}" to "${LAN:-any}" comment 'base.fw · LOCAL.lan'; done
 
     [[ -z "${MASTER}" ]] || ufw allow from "${MASTER}" comment "base.fw · Master.node";
 
