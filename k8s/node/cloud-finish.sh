@@ -65,8 +65,11 @@ systemctl enable fail2ban;
 
 /srv/local/bin/k8n-firewall.sh;
 
-( crontab -l | grep -v -F 'k8n-firewall.sh' ; echo "*/5 * * * * /srv/local/bin/k8n-firewall.sh" ) | crontab -
-( crontab -l | grep -v -F 'k8n-update.sh' ; echo "*/30 * * * * /srv/local/bin/k8n-update.sh" ) | crontab -
+# FIXME :: allow updates without force  fw
+if [[ ! -z "${ROLE}" ]]; then
+    ( crontab -l | grep -v -F 'k8n-firewall.sh' ; echo "*/5 * * * * /srv/local/bin/k8n-firewall.sh" ) | crontab -
+    ( crontab -l | grep -v -F 'k8n-update.sh' ; echo "*/30 * * * * /srv/local/bin/k8n-update.sh" ) | crontab -
+fi
 ( crontab -l | grep -v -F 'k8n-docker_cleanup.sh' ; echo "0 3 * * 0 /srv/local/bin/k8n-docker_cleanup.sh" ) | crontab -
 # · ---
 DEBIAN_FRONTEND=noninteractive apt -y full-upgrade && apt -y autoclean && apt -y autoremove && sync;
