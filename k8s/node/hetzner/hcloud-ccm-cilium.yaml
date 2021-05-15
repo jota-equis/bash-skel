@@ -63,9 +63,9 @@ spec:
         - key: "node.kubernetes.io/not-ready"
           effect: "NoSchedule"
         #  Custom node
-        - effect: NoSchedule
-          key: nodetype
-          operator: Exists
+        - key: "nodetype/system"
+          value: "true"
+          effect: "NoSchedule"
       hostNetwork: true
       containers:
         - image: hetznercloud/hcloud-cloud-controller-manager:v1.9.1
