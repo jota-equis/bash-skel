@@ -125,7 +125,9 @@ data:
   auto-direct-node-routes: "false"
   enable-bandwidth-manager: "false"
   enable-local-redirect-policy: "false"
-  kube-proxy-replacement:  "probe"
+  kube-proxy-replacement:  "strict"
+  k8s-service-host: "10.0.0.2"
+  k8s-service-port: "6443"
   kube-proxy-replacement-healthz-bind-address: ""
   enable-health-check-nodeport: "true"
   node-port-bind-protection: "true"
@@ -478,7 +480,7 @@ spec:
               key: custom-cni-conf
               name: cilium-config
               optional: true
-        image: "quay.io/cilium/cilium:v1.9.8@sha256:5d4c175a599ccb22a97dbc8b393a81caca71ada49951c5b5545039c6548ea350"
+        image: "quay.io/cilium/cilium:v1.10.3@sha256:8419531c5d3677158802882bdfe2297915c43f2ebe3649551aaac22de9f6d565"
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -540,7 +542,7 @@ spec:
           # same directory where we install cilium cni plugin so that exec permissions
           # are available.
           - 'cp /usr/bin/cilium-mount /hostbin/cilium-mount && nsenter --cgroup=/hostproc/1/ns/cgroup --mount=/hostproc/1/ns/mnt "${BIN_PATH}/cilium-mount" $CGROUP_ROOT; rm /hostbin/cilium-mount'
-        image: "quay.io/cilium/cilium:v1.9.8@sha256:5d4c175a599ccb22a97dbc8b393a81caca71ada49951c5b5545039c6548ea350"
+        image: "quay.io/cilium/cilium:v1.10.3@sha256:8419531c5d3677158802882bdfe2297915c43f2ebe3649551aaac22de9f6d565"
         imagePullPolicy: IfNotPresent
         volumeMounts:
           - mountPath: /hostproc
@@ -570,7 +572,7 @@ spec:
               key: wait-bpf-mount
               name: cilium-config
               optional: true
-        image: "quay.io/cilium/cilium:v1.9.8@sha256:5d4c175a599ccb22a97dbc8b393a81caca71ada49951c5b5545039c6548ea350"
+        image: "quay.io/cilium/cilium:v1.10.3@sha256:8419531c5d3677158802882bdfe2297915c43f2ebe3649551aaac22de9f6d565"
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         securityContext:
@@ -732,7 +734,7 @@ spec:
               key: debug
               name: cilium-config
               optional: true
-        image: "quay.io/cilium/operator-generic:v1.9.8@sha256:e6c5e785c0695815d2f8ef1a99674af3d6453848f9feb2052c06af69348b3715"
+        image: "quay.io/cilium/operator-generic:v1.10.3@sha256:337ebf27eae4fbad51cc4baf9110b3ec6753320dd33075bc136e2a1865be5eb5"
         imagePullPolicy: IfNotPresent
         name: cilium-operator
         livenessProbe:
