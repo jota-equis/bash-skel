@@ -149,7 +149,7 @@ data:
   hubble-tls-key-file: /var/lib/cilium/tls/hubble/server.key
   hubble-tls-client-ca-files: /var/lib/cilium/tls/hubble/client-ca.crt
   ipam: "cluster-pool"
-  enable-endpoint-routes: "true"
+  # enable-endpoint-routes: "true"
   cluster-pool-ipv4-cidr: "10.0.0.0/8"
   native-routing-cidr: "10.42.0.0/16"
   cluster-pool-ipv4-mask-size: "24"
